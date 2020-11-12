@@ -1,4 +1,4 @@
-# Project Countri Viewer
+# Project Country Viewer
 
 ## Getting Started with Create React App
 
