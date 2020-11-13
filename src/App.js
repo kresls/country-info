@@ -12,7 +12,7 @@ function ClearAllTimeouts() {
 class App extends React.Component {
   render() {
     return (
-      <div>
+      <div className="app-wrap">
         <h1>Country viewer</h1>
         <SearchBar />
       </div>
@@ -40,7 +40,7 @@ class SearchBar extends React.Component {
     else if(this.state.suggestionsFound) { // there is MORE THAN one country
       
     }
-    else { // there is no country
+    else { // there is no suggested country
       
     }
 
@@ -73,22 +73,26 @@ class SearchBar extends React.Component {
   }
   render() {
     return (
-      <div>
-        <form onSubmit={this.handleSubmitForm}>
-          <input
-            type="search"
-            onChange={this.handleInputChange} 
-            value={this.state.country}
-          />
-          <input
-            type="submit"
-            value="Search"
-            onSubmit={this.handleSubmitForm}
-            disabled={!this.state.suggestionsFound}
-          />
-        </form>
-        {this.state.readyToQuery ? <SearchSuggestions queryResult={this.state.queryResult} query={this.state.query} updateQueryResult={this.updateQueryResult} updateSuggestionsFound={this.updateSuggestionsFound} /> : null }
-      </div>
+      <form id="search-form" onSubmit={this.handleSubmitForm}>
+        <input
+          type="search"
+          onChange={this.handleInputChange} 
+          value={this.state.country}
+          className="search-bar-text"
+        />
+        <input
+          type="submit"
+          value="Search"
+          onSubmit={this.handleSubmitForm}
+          disabled={!this.state.suggestionsFound}
+          className="search-bar-submit"
+        />
+        {this.state.readyToQuery ? <SearchSuggestions
+                                    queryResult={this.state.queryResult}
+                                    query={this.state.query} 
+                                    updateQueryResult={this.updateQueryResult} 
+                                    updateSuggestionsFound={this.updateSuggestionsFound} /> : null }
+      </form>
     )
   }
 }
@@ -167,22 +171,28 @@ class SearchSuggestions extends React.Component {
       return <div>{this.state.errorMessage}</div>
     }
     else if(!this.state.isLoaded) { // If the state hasn't loaded
-      return <div>Loading...</div>
+      return (
+        <select form="search-form" className="search-suggestions">
+            <option>Loading..</option>
+        </select>
+      )
     }
     else if(this.state.countries.length > 0) { // If suggestions have been found
         return (
-            <div className="search-suggestions">
+            <select size={this.state.countries.length} form="search-form" className="search-suggestions">
               {this.state.countries.map(function(country, index) {
                 return (
-                  <p key={index}>{country.name}</p>
+                  <option key={index}>{country.name}</option>
                 )
               }, this)}
-            </div>
+            </select>
           )
       }
     else { // If there search box is empty
       return (
-        <div className="search-suggestions suggestions-empty"></div>
+        <select form="search-form" className="search-suggestions">
+          <option>No country found</option>
+        </select>
       )
     }
   }
