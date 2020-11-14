@@ -1,6 +1,7 @@
 import './App.css';
 import React from 'react';
 
+
 let timeouts = [];
 
 function ClearAllTimeouts() {
@@ -35,10 +36,12 @@ class SearchBar extends React.Component {
   handleSubmitForm = (e) => {
     e.preventDefault()
     if(this.state.suggestionsFound && this.state.queryResult.length === 1) { // there is ONE country
-
+      //console.log(this.state.queryResult[0])
     }
-    else if(this.state.suggestionsFound) { // there is MORE THAN one country
-      
+    else if(this.state.suggestionsFound && e.target[2]) { // there is MORE THAN one country
+      let index = e.target[2].selectedIndex
+      let country = this.state.queryResult[index]
+      //console.log(country)
     }
     else { // there is no suggested country
       
@@ -71,6 +74,34 @@ class SearchBar extends React.Component {
       suggestionsFound: bool
     })
   }
+  keydown = (e) => {
+    let selectList = e.target.parentElement[2]
+    this.moveSelectOption(selectList, e)
+    this.disableCursorMove(e)
+  }
+  disableCursorMove = (e) => {
+    if(e.code === "ArrowDown" || e.code === "ArrowUp") {
+      e.preventDefault()
+    }
+  }
+  moveSelectOption = (selectList, e) => {
+    if(e.code === "ArrowDown" && selectList && selectList.length > 1) { // When down key is pressed and select element exists
+      if(selectList.selectedIndex === selectList.length - 1) { // moving down when at the bottom
+        selectList.selectedIndex = 0
+      }
+      else {
+        selectList.selectedIndex += 1
+      }
+    }
+    else if(e.code === "ArrowUp" && selectList && selectList.length > 1) { // When up key is pressed and select element exists
+      if(selectList.selectedIndex === 0) { // moving up when already at top
+        selectList.selectedIndex = selectList.length - 1
+      }
+      else {
+        selectList.selectedIndex -= 1
+      }
+    }
+  }
   render() {
     return (
       <form id="search-form" onSubmit={this.handleSubmitForm}>
@@ -78,6 +109,7 @@ class SearchBar extends React.Component {
           type="search"
           onChange={this.handleInputChange} 
           value={this.state.country}
+          onKeyDown={this.keydown}
           className="search-bar-text"
         />
         <input
@@ -87,11 +119,15 @@ class SearchBar extends React.Component {
           disabled={!this.state.suggestionsFound}
           className="search-bar-submit"
         />
-        {this.state.readyToQuery ? <SearchSuggestions
-                                    queryResult={this.state.queryResult}
-                                    query={this.state.query} 
-                                    updateQueryResult={this.updateQueryResult} 
-                                    updateSuggestionsFound={this.updateSuggestionsFound} /> : null }
+        {this.state.readyToQuery ?
+          <SearchSuggestions
+            queryResult={this.state.queryResult}
+            query={this.state.query} 
+            updateQueryResult={this.updateQueryResult} 
+            updateSuggestionsFound={this.updateSuggestionsFound}
+          />
+          : null
+        }
       </form>
     )
   }
@@ -105,7 +141,8 @@ class SearchSuggestions extends React.Component {
       error: false,
       errorMessage: "",
       isLoaded: false,
-      queryResult: this.props.queryResult
+      queryResult: this.props.queryResult,
+      countries: []
     }
   }
   componentDidUpdate(prevProps) {
@@ -142,7 +179,7 @@ class SearchSuggestions extends React.Component {
     }
   }
   componentDidMount() {
-    console.log("fetching suggestions with query '" + this.props.query + "'")
+    //console.log("fetching suggestions with query '" + this.props.query + "'")
     this.fetchSuggestions()
   }
   fetchSuggestions() {
@@ -166,9 +203,16 @@ class SearchSuggestions extends React.Component {
       this.props.updateSuggestionsFound(false)
     }
   }
+  submit = (e) => {
+    console.log(e.target.parentNode.parentNode[1])
+  }
   render() {
     if(this.state.error) { // If there's an error
-      return <div>{this.state.errorMessage}</div>
+      return (
+        <select form="search-form" className="search-suggestions">
+            <option>{this.state.errorMessage}</option>
+        </select>
+      )
     }
     else if(!this.state.isLoaded) { // If the state hasn't loaded
       return (
@@ -179,19 +223,18 @@ class SearchSuggestions extends React.Component {
     }
     else if(this.state.countries.length > 0) { // If suggestions have been found
         return (
-            <select size={this.state.countries.length} form="search-form" className="search-suggestions">
+            <select size={this.state.countries.length} form="search-form" className="search-suggestions no-scroll">
               {this.state.countries.map(function(country, index) {
                 return (
-                  <option key={index}>{country.name}</option>
+                  <option onClick={this.submit} key={index}>{country.name}</option>
                 )
               }, this)}
             </select>
           )
       }
-    else { // If there search box is empty
+    else { // If the search box is empty
       return (
-        <select form="search-form" className="search-suggestions">
-          <option>No country found</option>
+        <select form="search-form" className="search-suggestions suggestions-empty">
         </select>
       )
     }

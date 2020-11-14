@@ -16,7 +16,6 @@ code {
   height: 90vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
 }
 
@@ -33,6 +32,30 @@ code {
   -webkit-appearance: none;
   overflow: auto;
   border: 1px solid grey;
+}
+
+.search-suggestions selected {
+  background-color: red;
+}
+
+.no-scroll::-webkit-scrollbar {
+  display: none;
+}
+.no-scroll::-moz-scrollbar {
+  display: none;
+}
+.no-scroll::-o-scrollbar {
+  display: none;
+}
+.no-scroll::-google-ms-scrollbar {
+  display: none;
+}
+.no-scroll::-khtml-scrollbar {
+  display: none;
+}
+
+.suggestions-empty {
+  display: none;
 }
 
 .search-bar-text {
