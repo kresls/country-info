@@ -30,23 +30,38 @@ class SearchBar extends React.Component {
       query: "",
       readyToQuery: false,
       queryResult: [],
-      suggestionsFound: false
+      suggestionsFound: false,
+      countryPicked: {
+        status: false,
+        data: {}
+      }
     }
   }
   handleSubmitForm = (e) => {
     e.preventDefault()
     if(this.state.suggestionsFound && this.state.queryResult.length === 1) { // there is ONE country
-      //console.log(this.state.queryResult[0])
+      this.fetchWidgets(this.state.queryResult[0])
     }
     else if(this.state.suggestionsFound && e.target[2]) { // there is MORE THAN one country
       let index = e.target[2].selectedIndex
       let country = this.state.queryResult[index]
-      //console.log(country)
+      this.fetchWidgets(country)
     }
     else { // there is no suggested country
       
     }
-
+  }
+  fetchWidgets = (country) => {
+    this.clearForm()
+    this.setState({
+      countryPicked: {
+        status: true,
+        country: country
+      }
+    })
+  }
+  clearForm = () => {
+    this.setState({country: "", readyToQuery: false})
   }
   handleInputChange = (e) => {
     ClearAllTimeouts() // removes previously set timeouts so only one request is sent a time
@@ -104,6 +119,7 @@ class SearchBar extends React.Component {
   }
   render() {
     return (
+      <div>
       <form id="search-form" onSubmit={this.handleSubmitForm}>
         <input
           type="search"
@@ -111,6 +127,7 @@ class SearchBar extends React.Component {
           value={this.state.country}
           onKeyDown={this.keydown}
           className="search-bar-text"
+          autoFocus={true}
         />
         <input
           type="submit"
@@ -129,6 +146,26 @@ class SearchBar extends React.Component {
           : null
         }
       </form>
+      {this.state.countryPicked.status ? <WidgetContainer country={this.state.countryPicked.country} /> : null }
+      </div>
+    )
+  }
+}
+
+class WidgetContainer extends React.Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      country: this.props.country
+    }
+  }
+  componentDidMount() {
+    console.log(this.state.country)
+  }
+  render() {
+    return (
+      <div>The widgets go here</div>
     )
   }
 }
@@ -147,7 +184,7 @@ class SearchSuggestions extends React.Component {
   }
   componentDidUpdate(prevProps) {
     if (this.props.query !== prevProps.query) {
-      console.log("fetching suggestions with query '" + this.props.query + "'")
+      //console.log("fetching suggestions with query '" + this.props.query + "'")
       this.fetchSuggestions()
     }
     else if(this.props.queryResult !== prevProps.queryResult) {
@@ -203,9 +240,6 @@ class SearchSuggestions extends React.Component {
       this.props.updateSuggestionsFound(false)
     }
   }
-  submit = (e) => {
-    console.log(e.target.parentNode.parentNode[1])
-  }
   render() {
     if(this.state.error) { // If there's an error
       return (
@@ -226,7 +260,7 @@ class SearchSuggestions extends React.Component {
             <select size={this.state.countries.length} form="search-form" className="search-suggestions no-scroll">
               {this.state.countries.map(function(country, index) {
                 return (
-                  <option onClick={this.submit} key={index}>{country.name}</option>
+                  <option key={index}>{country.name}</option>
                 )
               }, this)}
             </select>
