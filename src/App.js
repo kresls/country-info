@@ -1,8 +1,20 @@
 import './App.css';
 import React from 'react';
 
-let timeouts = [];
+// Helper function to provide current date formatted as "YYYY-MM-DD"
+function GetFormattedDate() {
+  let date = new Date();
+  var mm = date.getMonth() + 1; // getMonth() is zero-based
+  var dd = date.getDate();
 
+  return [date.getFullYear(),
+          (mm>9 ? '' : '0') + mm,
+          (dd>9 ? '' : '0') + dd
+         ].join('');
+}
+
+// Handle timeouts, used in search bar
+let timeouts = [];
 function ClearAllTimeouts() {
   for(let i = 0; i < timeouts.length; i++) {
     clearTimeout(timeouts[i]);
@@ -10,11 +22,27 @@ function ClearAllTimeouts() {
 }
 
 class App extends React.Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      countryPicked: {
+        status: false,
+        country: {}
+      }
+    }
+  }
+  updateCountry = (countryPicked) => {
+    this.setState({
+      countryPicked: countryPicked
+    })
+  }
   render() {
     return (
       <div className="app-wrap">
         <h1>Country viewer</h1>
-        <SearchBar />
+        <SearchBar updateCountry={this.updateCountry} />
+        {this.state.countryPicked.status ? <WidgetContainer country={this.state.countryPicked.country} /> : null }
       </div>
     )
   }
@@ -29,11 +57,7 @@ class SearchBar extends React.Component {
       query: "",
       readyToQuery: false,
       queryResult: [],
-      suggestionsFound: false,
-      countryPicked: {
-        status: false,
-        country: {}
-      }
+      suggestionsFound: false
     }
   }
   handleSubmitForm = (e) => {
@@ -52,11 +76,9 @@ class SearchBar extends React.Component {
   }
   fetchWidgets = (country) => {
     this.clearForm()
-    this.setState({
-      countryPicked: {
-        status: true,
-        country: country
-      }
+    this.props.updateCountry({
+      status: true,
+      country: country
     })
   }
   clearForm = () => {
@@ -118,34 +140,33 @@ class SearchBar extends React.Component {
   }
   render() {
     return (
-      <div>
-      <form id="search-form" onSubmit={this.handleSubmitForm}>
-        <input
-          type="search"
-          onChange={this.handleInputChange} 
-          value={this.state.country}
-          onKeyDown={this.keydown}
-          className="search-bar-text"
-          autoFocus={true}
-        />
-        <input
-          type="submit"
-          value="Search"
-          onSubmit={this.handleSubmitForm}
-          disabled={!this.state.suggestionsFound}
-          className="search-bar-submit"
-        />
-        {this.state.readyToQuery ?
-          <SearchSuggestions
-            queryResult={this.state.queryResult}
-            query={this.state.query} 
-            updateQueryResult={this.updateQueryResult} 
-            updateSuggestionsFound={this.updateSuggestionsFound}
+      <div className="form-wrapper">
+        <form id="search-form" onSubmit={this.handleSubmitForm}>
+          <input
+            type="search"
+            onChange={this.handleInputChange} 
+            value={this.state.country}
+            onKeyDown={this.keydown}
+            className="search-bar-text"
+            autoFocus={true}
           />
-          : null
-        }
-      </form>
-      {this.state.countryPicked.status ? <WidgetContainer country={this.state.countryPicked.country} /> : null }
+          <input
+            type="submit"
+            value="Search"
+            onSubmit={this.handleSubmitForm}
+            disabled={!this.state.suggestionsFound}
+            className="search-bar-submit"
+          />
+          {this.state.readyToQuery ?
+            <SearchSuggestions
+              queryResult={this.state.queryResult}
+              query={this.state.query} 
+              updateQueryResult={this.updateQueryResult} 
+              updateSuggestionsFound={this.updateSuggestionsFound}
+            />
+            : null
+          }
+        </form>
       </div>
     )
   }
@@ -168,10 +189,82 @@ class WidgetContainer extends React.Component {
   }
   render() {
     return (
-      <div>
+      <div className="widget-container">
         <Holidays code={this.state.country.alpha2Code} name={this.state.country.name} />
+        <SunriseSunset country={this.state.country} />
       </div>
     )
+  }
+}
+
+class SunriseSunset extends React.Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      dataExists: false,
+      sunrise: "",
+      sunset: ""
+    }
+  }
+  componentDidMount() {
+    this.fetchWOEID()
+  }
+  componentDidUpdate(prevProps) {
+    if(prevProps.country !== this.props.country) {
+      this.fetchWOEID()
+    }   
+  }
+  handleResult = (result) => {
+
+    this.setState({
+      dataExists: true,
+      sunrise: this.getFormattedTime(result.sun_rise),
+      sunset: this.getFormattedTime(result.sun_set)
+    })
+  }
+  getFormattedTime(str) {
+    str = str.split("T")
+    str = str[1].split(".")
+    return str[0]
+  }
+  fetchData(woeid) {
+    fetch(
+      "https://www.metaweather.com/api/location/" + woeid)
+      .then(res => res.json())
+      .then(
+        (result) => {
+          this.handleResult(result)
+        }
+      )
+  }
+  fetchWOEID() {
+    fetch(
+      "https://www.metaweather.com/api/location/search/?query=" + this.props.country.capital)
+      .then(res => res.json())
+      .then(
+        (result) => {
+          if(result[0]) { // If the capital city has weather data
+            this.fetchData(result[0].woeid)
+          }
+        }
+      )
+  }
+  render() {
+    if(this.state.dataExists) {
+      return (
+        <div className="widget sunrise-sunset">
+          <h4>Weather information in capital city {this.props.country.capital}</h4>
+          <p className="sunrise-text">Sunrise: {this.state.sunrise}</p>
+          <p className="sunset-text">Sunset: {this.state.sunset}</p>
+        </div>
+      )
+    }
+    else {
+      return (
+        null
+      )
+    }
   }
 }
 
@@ -219,7 +312,7 @@ class Holidays extends React.Component {
   render() {
     if(this.state.holidaysFound) {
       return (
-        <div>
+        <div className="widget public-holidays">
           <h4>{new Date().getFullYear()} public holidays in {this.props.name}</h4>
         {this.state.holidays.map(function(holiday, index) {
           return (
@@ -227,7 +320,7 @@ class Holidays extends React.Component {
               key={index}
               className="holiday-container">
                 <span className="holiday-name">{holiday.name}</span><br />
-                {holiday.name !== holiday.localName ? <span className="holiday-localName">{holiday.localName}<br /></span> : null}
+                {holiday.name !== holiday.localName ? <span className="holiday-localname">{holiday.localName}<br /></span> : null}
                 <span className="holiday-date">{holiday.date}</span><br /><br />
             </div>
           )
