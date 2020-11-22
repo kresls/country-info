@@ -22,7 +22,7 @@ class App extends React.Component {
   render() {
     return (
       <div className="app-wrap">
-        <h1>Country viewer</h1>
+        <h1>Country Info</h1>
         <SearchBar updateCountry={this.updateCountry} />
         {this.state.countryPicked.status ? <WidgetContainer country={this.state.countryPicked.country} /> : null }
       </div>
