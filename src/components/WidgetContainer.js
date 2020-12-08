@@ -1,6 +1,9 @@
 import React from 'react';
 import SunriseSunset from './SunriseSunset';
 import Holidays from './Holidays';
+import Books from './Books';
+import Money from './Money';
+import Namedays from './Namedays';
 
 class WidgetContainer extends React.Component {
   constructor(props) {
@@ -22,6 +25,9 @@ class WidgetContainer extends React.Component {
       <div className="widget-container">
         <Holidays code={this.state.country.alpha2Code} name={this.state.country.name} />
         <SunriseSunset country={this.state.country} />
+        <Books country={this.state.country} />
+        <Namedays country={this.state.country} />
+        <Money country={this.state.country} />
       </div>
     )
   }

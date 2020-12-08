@@ -83,6 +83,7 @@ code {
   overflow-y: auto;
 }
 
-.holiday-localname {
+.holiday-localname,
+.book-title {
   font-style: italic;
 }
