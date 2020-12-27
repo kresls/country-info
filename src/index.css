@@ -13,7 +13,6 @@ code {
 }
 
 .app-wrap {
-  height: 90vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -71,16 +70,28 @@ code {
 }
 
 /* Widget container and widgets */
+.currently-showing {
+  width: 100%;
+  text-align: center;
+  margin-top: 1em;
+}
+
 .widget-container {
   display: flex;
+  flex-direction: row;
+  max-width: 800px;
+  flex-wrap: wrap;
+  margin-bottom: 2em;
 }
 
 .widget {
   margin: 1em 1em 0 0;
   padding: 0.5em;
   border: 1px solid grey;
-  height: 40vh;
+  max-height: 40vh;
+  box-sizing: border-box;
   overflow-y: auto;
+  width: 45%;
 }
 
 .holiday-localname,

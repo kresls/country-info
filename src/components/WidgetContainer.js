@@ -22,12 +22,15 @@ class WidgetContainer extends React.Component {
   }
   render() {
     return (
-      <div className="widget-container">
-        <Holidays code={this.state.country.alpha2Code} name={this.state.country.name} />
-        <SunriseSunset country={this.state.country} />
-        <Books country={this.state.country} />
-        <Namedays country={this.state.country} />
-        <Money country={this.state.country} />
+      <div>
+        <div className="currently-showing">Currently showing country: {this.props.country.name}</div>
+        <div className="widget-container">
+          <Holidays code={this.state.country.alpha2Code} name={this.state.country.name} />
+          <SunriseSunset country={this.state.country} />
+          <Books country={this.state.country} />
+          <Namedays country={this.state.country} />
+          <Money country={this.state.country} />
+        </div>
       </div>
     )
   }

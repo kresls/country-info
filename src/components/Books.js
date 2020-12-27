@@ -52,7 +52,7 @@ class Books extends React.Component {
               }
             }
             return (
-              <p>
+              <p key={index}>
                 <span className="book-title">{book.title}</span> by {authors}
               </p>
             )

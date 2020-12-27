@@ -11,6 +11,8 @@ Currently using the following APIs:
 - [REST Countries](https://restcountries.eu/)
 - [Nager.Date](https://date.nager.at/)
 - [MetaWeather](https://www.metaweather.com/api/)
+- [ExchangeRates API](https://exchangeratesapi.io/)
+- [International NameDay API](https://api.abalin.net/)
 
 ## To do
 
